@@ -71,6 +71,9 @@ type View struct {
 	// If Mask is true, the View will display the mask instead of the real
 	// content
 	Mask rune
+
+	// maximum lines in the buffer, afte which the first will be purged when a new is added
+	MaxLines int
 }
 
 type viewLine struct {
@@ -226,6 +229,13 @@ func (v *View) Write(p []byte) (n int, err error) {
 				v.lines = append(v.lines, cells)
 			}
 		}
+	}
+	nlines := len(v.lines)
+	max := v.MaxLines
+	if max != 0 && nlines > max {
+		newbuf := make([][]cell, max)
+		copy(newbuf, v.lines[nlines-max:])
+		v.lines = newbuf
 	}
 	return len(p), nil
 }
