@@ -205,6 +205,13 @@ func (v *View) Origin() (x, y int) {
 func (v *View) Write(p []byte) (n int, err error) {
 	v.tainted = true
 
+	if v.FgColor != ColorDefault {
+		v.ei.curFgColor = v.FgColor
+	}
+	if v.BgColor != ColorDefault {
+		v.ei.curBgColor = v.BgColor
+	}
+
 	for _, ch := range bytes.Runes(p) {
 		switch ch {
 		case '\n':
