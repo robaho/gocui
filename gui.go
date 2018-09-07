@@ -67,6 +67,9 @@ type Gui struct {
 	// If ASCII is true then use ASCII instead of unicode to draw the
 	// interface. Using ASCII is more portable.
 	ASCII bool
+
+	// if true, then ansi escape processing is performed in the view.Write. The default is true.
+	EscapeProcessing bool
 }
 
 // NewGui returns a new Gui object with a given output mode.
@@ -87,6 +90,7 @@ func NewGui(mode OutputMode) (*Gui, error) {
 
 	g.BgColor, g.FgColor = ColorDefault, ColorDefault
 	g.SelBgColor, g.SelFgColor = ColorDefault, ColorDefault
+	g.EscapeProcessing = true
 
 	return g, nil
 }
@@ -148,6 +152,7 @@ func (g *Gui) SetView(name string, x0, y0, x1, y1 int) (*View, error) {
 	v := newView(name, x0, y0, x1, y1, g.outputMode)
 	v.BgColor, v.FgColor = g.BgColor, g.FgColor
 	v.SelBgColor, v.SelFgColor = g.SelBgColor, g.SelFgColor
+	v.EscapeProcessing = g.EscapeProcessing
 	g.views = append(g.views, v)
 	return v, ErrUnknownView
 }

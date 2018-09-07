@@ -72,8 +72,12 @@ type View struct {
 	// content
 	Mask rune
 
-	// maximum lines in the buffer, afte which the first will be purged when a new is added
+	// maximum lines in the buffer, after which the first will be purged when a new is added
 	MaxLines int
+
+	// if true, then ansi escape processing is performed on Write, otherwise the views colors
+	// are used. The default is set from the GUI when the view is created
+	EscapeProcessing bool
 }
 
 type viewLine struct {
@@ -205,13 +209,6 @@ func (v *View) Origin() (x, y int) {
 func (v *View) Write(p []byte) (n int, err error) {
 	v.tainted = true
 
-	if v.FgColor != ColorDefault {
-		v.ei.curFgColor = v.FgColor
-	}
-	if v.BgColor != ColorDefault {
-		v.ei.curBgColor = v.BgColor
-	}
-
 	for _, ch := range bytes.Runes(p) {
 		switch ch {
 		case '\n':
@@ -252,6 +249,16 @@ func (v *View) Write(p []byte) (n int, err error) {
 // contains the processed data.
 func (v *View) parseInput(ch rune) []cell {
 	cells := []cell{}
+
+	if !v.EscapeProcessing {
+		c := cell{
+			fgColor: v.FgColor,
+			bgColor: v.BgColor,
+			chr:     ch,
+		}
+		cells = append(cells, c)
+		return cells
+	}
 
 	isEscape, err := v.ei.parseOne(ch)
 	if err != nil {
